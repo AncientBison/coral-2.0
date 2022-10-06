@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>settings - coral</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+  <link href="style.css" rel="stylesheet" type="text/css"/>
+  <script src="libraries/spectrum/spectrum.js"></script>
+  <link rel="stylesheet" href="libraries/spectrum/spectrum.css"/>
+  <script type="module" src="libraries/cookies-js/js.cookie.js"></script>
+  <script nomodule defer src="libraries/cookies-js/js.cookie.js"></script>
+</head>
+
+<body>
+  <p id="back">Save Changes and Exit</p>
+  <h1>Settings:</h1>
+  <label for="elements">Choose an element:</label>
+  <select name="elements" id="element-selector">
+    <option value="text" selected>Text Color</option>
+    <option value="background">Background Color</option>
+    <option value="buttons">Buttons Color</option>
+    <option value="font">Text Font (W.I.P, doesn't work)</option>
+  </select>
+  <br/><br/>
+  <input type="text" id="color-selector"></input>
+  
+  <script src="settings.js" type="module"></script>
+</body>
+
+</html>
