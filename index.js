@@ -4,16 +4,16 @@ const http = require("http");
 const server = http.createServer(app);
 const {Server} = require("socket.io");
 const io = new Server(server);
-const email = require("./email")
+// const email = require("./email")
 // const database = require("./database.js")
 
 // email.sendEmail("isb271@students.needham.k12.ma.us", "I like pie!");
 
-exampleUser = {
-  "username": "John Doe",
-  "email": "john.doe@example.com",
-  "password": "password"
-}
+// exampleUser = {
+  // "username": "John Doe",
+  // "email": "john.doe@example.com",
+  // "password": "dv cng edfascxvd gv nhhngcbpassword"
+// }
 
 // database.addUser(exampleUser);
 
