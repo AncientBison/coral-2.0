@@ -190,3 +190,10 @@ switch (true) {
     ""
   }
 }
+
+const scrollContainer = document.getElementById("navbar");
+
+scrollContainer.addEventListener("wheel", (evt) => {
+    evt.preventDefault();
+    scrollContainer.scrollLeft += evt.deltaY;
+});
