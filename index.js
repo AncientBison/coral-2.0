@@ -24,7 +24,7 @@ class User {
   }
 }
 
-var users = [];
+let users = [];
 
 const HOME_PAGE = "index.html"
 
@@ -38,9 +38,13 @@ app.get('*', function(req, res) {
   res.sendFile(__dirname + "/client" + req.params[0]);
 });
 
+function getRoomsForSocket(socket) {
+  return Array.from(socket.rooms.values());
+}
+
 io.on("connection", (socket) => {
-  var user = new User(socket);
-  var id = socket.id;
+  let user = new User(socket);
+  let id = socket.id;
   users.push({
     id: user
   });
@@ -58,7 +62,7 @@ io.on("connection", (socket) => {
               username: ${username}
               text: ${text}`);
     
-    io.emit("message", username, text);
+    io.in(getRoomsForSocket(socket)).emit("message", username, text);
   });
   
   socket.once("disconnect", () => {
@@ -66,12 +70,16 @@ io.on("connection", (socket) => {
     delete user;
   });
 
-  socket.on("change room", (roomNumber) => {
-    console.log(`User: ${socket.data.username} changed room to room ${roomNumber}`)
+  socket.on("change room", (roomNumber) => {    
+    socket.leave("Room 1");
+    socket.leave("Room 2");
+    socket.leave("Room 3");
+    socket.leave("Room 4");
+    socket.leave("Room 5");
 
-    socket.join("Room " + roomNumber)
-      
-    // io.emit("", username, text);
+    socket.join("Room " + roomNumber);
+
+    console.log(`User: ${socket.data.username} is now in rooms ${getRoomsForSocket(socket)}`);
   });
 
 });

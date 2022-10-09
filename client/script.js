@@ -2,18 +2,19 @@ import Cookies from "/libraries/cookies-js/js.cookie.mjs"
 
 const socket = io();
 
-var connected = false;
+let connected = false;
 
-var messagesShown = 0;
+let messagesShown = 0;
 
-var username = "";
+let username = "";
 
-var messageElement;
+let messageElement;
 
 const DEBUG = true;
 
-var canSendUsername = true;
+let canSendUsername = true;
 
+let room = "1";
 
 // if (Cookies.get("style") == undefined) {
   // socket
@@ -50,7 +51,7 @@ socket.on("message", (username, text) => { //NEVER SENDS MESSAGE! PROBLEM WITH E
   debug(`New message received:
               username: ${username}
               text: ${text}`);
-  var message = new Message(username, text);
+  let message = new Message(username, text);
   addMessage(message);
 });
 
@@ -83,14 +84,24 @@ function cleanMessageLog() {
   }
 }
 
+function clearMessageLog() {
+  Array.from(document.getElementsByClassName("message")).forEach(message => {
+    message.remove();
+  });
+
+  messagesShown = 0;
+}
+
 function addMessage(message) {
   if (MESSAGE_OVERFLOW_STYLE == "remove") {
     messagesShown += 1;
   }
-  var paragraph = document.createElement("p");
-  var text = document.createTextNode(message.toString());
+
+  let paragraph = document.createElement("p");
+  let text = document.createTextNode(message.toString());
   paragraph.appendChild(text);
-  var messages = document.getElementById("messages");
+  paragraph.classList.add("message");
+  let messages = document.getElementById("messages");
   messages.insertBefore(paragraph, document.getElementById("message-start"));
   cleanMessageLog();
 }
@@ -106,7 +117,7 @@ function setupUsernameEntrace() {
 }
 
 function getSelectionStart() {
-  var node = document.getSelection().anchorNode;
+  let node = document.getSelection().anchorNode;
   return (node.nodeType == 3 ? node.parentNode : node);
 }
 
@@ -131,10 +142,10 @@ function sendCaretToEndOfMessageElement() {
 
 const SHOW_ERROR_TIME = 500;
 
-var incorrectFormatErroring = false;
+let incorrectFormatErroring = false;
 
 function incorrectInputFormat(reason) {
-  var triedUsername = messageElement.innerText;
+  let triedUsername = messageElement.innerText;
   messageElement.setAttribute("contenteditable", "");
   messageElement.setAttribute("style", "color: red; caret-color: transparent;"); //TODO: Change when style works.
   messageElement.innerText = reason;
@@ -153,10 +164,13 @@ function incorrectInputFormat(reason) {
 const MIN_USERNAME_LENGTH = 2;
 const MAX_USERNAME_LENGTH = 25;
 
-document.addEventListener("keypress", function(event) {
+document.addEventListener("keydown", function(event) {
+
   messageElement.focus();
   
   if (event.key == "Enter") {
+    messageElement.innerText = "oogggaaa boogsdop";
+
     debug(username);
     event.preventDefault();
     if (username == "" && canSendUsername) {
@@ -166,7 +180,7 @@ document.addEventListener("keypress", function(event) {
         getAndSendUsername();
       }
     } else if (!incorrectFormatErroring) {
-      var text = messageElement.innerText;
+      let text = messageElement.innerText;
       sendMessage(new Message(username, text));
       messageElement.innerText = "";
     }
@@ -190,6 +204,14 @@ switch (true) {
   }
 }
 
+// messageElement.addEventListener("keydown", function(event) {
+  
+// });
+
+document.addEventListener("mouseup", function() {
+  messageElement.focus();
+})
+
 const scrollContainer = document.getElementById("navbar");
 
 scrollContainer.addEventListener("wheel", (evt) => {
@@ -198,12 +220,19 @@ scrollContainer.addEventListener("wheel", (evt) => {
 }, {passive: true});
 
 function joinRoom(roomLocation) {
-  socket.emit("change room", roomLocation);
-  debug(`Joined room: ${roomLocation}`);
+  if (roomLocation != room) {
+    socket.emit("change room", roomLocation);
+    clearMessageLog();
+    room = roomLocation;
+    debug(`Joined room: ${roomLocation}`);
+  }
 }
 
-for (var element of document.getElementsByClassName("room-element")) {
+for (let element of document.getElementsByClassName("room-element")) {
   element.addEventListener("click", () => {
+    document.getElementById("room" + room).classList.remove("active");
+    element.classList.add("active");
+
     joinRoom(element.dataset.to);
   });
-};
+}
