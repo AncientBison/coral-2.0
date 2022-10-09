@@ -10,7 +10,7 @@ var username = "";
 
 var messageElement;
 
-const DEBUG = false;
+const DEBUG = true;
 
 var canSendUsername = true;
 
@@ -74,7 +74,6 @@ const MESSAGE_OVERFLOW_STYLE = "scroll" //"remove"
 
 function cleanMessageLog() {
   if (MESSAGE_OVERFLOW_STYLE == "scroll") {
-    console.log(document.getElementById("messages").scrollHeight);
     document.getElementById("messages").scrollTo(0, document.getElementById("messages").scrollHeight);
   } else {
     if (messagesShown >= 10) {
@@ -196,4 +195,15 @@ const scrollContainer = document.getElementById("navbar");
 scrollContainer.addEventListener("wheel", (evt) => {
     evt.preventDefault();
     scrollContainer.scrollLeft += evt.deltaY;
-});
+}, {passive: true});
+
+function joinRoom(roomLocation) {
+  socket.emit("change room", roomLocation);
+  debug(`Joined room: ${roomLocation}`);
+}
+
+for (var element of document.getElementsByClassName("room-element")) {
+  element.addEventListener("click", () => {
+    joinRoom(element.dataset.to);
+  });
+};

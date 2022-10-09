@@ -19,11 +19,11 @@
      <p id="message-start">></p><span contenteditable id="message" autofocus></span>
   </div> <!--add p elements, any keys typed are added to a new line in the console, done with keypress. -->
   <div class="navbar" id="navbar">
-    <a href="#room1">Room 1</a>
-    <a href="#room2">Room 2</a>
-    <a href="#room3">Room 3</a>
-    <a href="#room4">Room 4</a>
-    <a href="#room5">Room 5</a>
+    <a class="room-element" data-to="1">Room 1</a>
+    <a class="room-element" data-to="2">Room 2</a>
+    <a class="room-element" data-to="3">Room 3</a>
+    <a class="room-element" data-to="4">Room 4</a>
+    <a class="room-element" data-to="5">Room 5</a>
     <a href="javascript:void(0);" class="icon" onclick="myFunction()">&#9776;</a>
   </div>
   <script src="/socket.io/socket.io.js"></script>

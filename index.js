@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const http = require("http");
+const { SocketAddress } = require("net");
 const server = http.createServer(app);
 const {Server} = require("socket.io");
 const io = new Server(server);
@@ -27,6 +28,8 @@ var users = [];
 
 const HOME_PAGE = "index.html"
 
+const DEFAULT_ROOM = "Room 1"
+
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/client/" + HOME_PAGE);
 });
@@ -41,6 +44,8 @@ io.on("connection", (socket) => {
   users.push({
     id: user
   });
+
+  socket.join("Room 1")
   
   socket.data.username = "";
   
@@ -60,9 +65,20 @@ io.on("connection", (socket) => {
     user = users.find(o => o.id === id);
     delete user;
   });
+
+  socket.on("change room", (roomNumber) => {
+    console.log(`User: ${socket.data.username} changed room to room ${roomNumber}`)
+
+    socket.join("Room " + roomNumber)
+      
+    // io.emit("", username, text);
+  });
+
 });
 
 
 server.listen(3000, () => {
   console.log("listening on *:3000");
 });
+
+//Make socket remeber room using data. Then use that to emit with ".in()"
