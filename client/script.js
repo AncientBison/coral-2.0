@@ -1,5 +1,17 @@
 import Cookies from "/libraries/cookies-js/js.cookie.mjs"
 
+Object.defineProperty(Element.prototype, "outerHeight", {
+  "get": function() {
+      var height = this.clientHeight;
+      var computedStyle = window.getComputedStyle(this); 
+      height += parseInt(computedStyle.marginTop, 10);
+      height += parseInt(computedStyle.marginBottom, 10);
+      height += parseInt(computedStyle.borderTopWidth, 10);
+      height += parseInt(computedStyle.borderBottomWidth, 10);
+      return height;
+  }
+});
+
 const socket = io();
 
 let connected = false;
@@ -73,9 +85,13 @@ async function sendMessage(message) {
 
 const MESSAGE_OVERFLOW_STYLE = "scroll" //"remove"
 
+function scrollToBottomOfMessages() {
+  document.getElementById("messages").scrollTo(0, document.getElementById("messages").scrollHeight);
+}
+
 function cleanMessageLog() {
   if (MESSAGE_OVERFLOW_STYLE == "scroll") {
-    document.getElementById("messages").scrollTo(0, document.getElementById("messages").scrollHeight);
+    scrollToBottomOfMessages();
   } else {
     if (messagesShown >= 10) {
       messageElement.parentNode.children[0].remove();
@@ -164,31 +180,45 @@ function incorrectInputFormat(reason) {
 const MIN_USERNAME_LENGTH = 2;
 const MAX_USERNAME_LENGTH = 25;
 
-document.addEventListener("keydown", function(event) {
+function escapeHtml(unsafe) {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+ }
 
-  messageElement.focus();
-  
-  if (event.key == "Enter") {
-    messageElement.innerText = "oogggaaa boogsdop";
+addEventListener("load", () => {
+  console.log("cool!")
+  messageElement.addEventListener("keypress", function(event) {
+    
+    if (event.key == "Enter") {
 
-    debug(username);
-    event.preventDefault();
-    if (username == "" && canSendUsername) {
-      if (checkUsernameIncorrectFormat()) {
-        incorrectInputFormat(checkUsernameIncorrectFormat());
-      } else {
-        getAndSendUsername();
+      debug(username);
+      event.preventDefault();
+      if (username == "" && canSendUsername) {
+        if (checkUsernameIncorrectFormat()) {
+          incorrectInputFormat(checkUsernameIncorrectFormat());
+        } else {
+          getAndSendUsername();
+        }
+      } else if (!incorrectFormatErroring) {
+        let text = messageElement.innerText;
+        sendMessage(new Message(username, text));
+        messageElement.innerText = "";
       }
-    } else if (!incorrectFormatErroring) {
-      let text = messageElement.innerText;
-      sendMessage(new Message(username, text));
-      messageElement.innerText = "";
     }
-  }
-  
-  if (getSelectionStart() != messageElement) {
-    sendCaretToEndOfMessageElement();
-  }
+    
+    if (getSelectionStart() != messageElement) {
+      sendCaretToEndOfMessageElement();
+    }
+
+    document.getElementById("debug-mobile").innerText = escapeHtml(messageElement.innerHTML);
+
+    console.log(messageElement.innerHTML)
+
+  });
 });
 
 function checkUsernameIncorrectFormat() {
@@ -210,7 +240,11 @@ switch (true) {
 
 document.addEventListener("mouseup", function() {
   messageElement.focus();
-})
+});
+
+document.addEventListener("keypress", function() {
+  messageElement.focus();
+});
 
 const scrollContainer = document.getElementById("navbar");
 
@@ -236,3 +270,12 @@ for (let element of document.getElementsByClassName("room-element")) {
     joinRoom(element.dataset.to);
   });
 }
+
+window.addEventListener("resize", () => {
+  document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight + "px";
+  scrollToBottomOfMessages();
+  console.log(window.innerHeight);
+  console.log(document.getElementById("navbar").offsetHeight);
+  console.log(document.getElementById("messages").outerHeight)
+  console.log(window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight);
+});

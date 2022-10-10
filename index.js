@@ -76,7 +76,7 @@ io.on("connection", (socket) => {
     socket.leave("Room 3");
     socket.leave("Room 4");
     socket.leave("Room 5");
-
+    // Make dynamic.
     socket.join("Room " + roomNumber);
 
     console.log(`User: ${socket.data.username} is now in rooms ${getRoomsForSocket(socket)}`);

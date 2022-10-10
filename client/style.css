@@ -17,6 +17,7 @@ p {
 #messages {
   margin: 0.5em;
   max-height: 90vh;
+  max-height: calc(var(--vh, 1vh) * 100);
   overflow-y: scroll;
   overflow-wrap: break-word;
   -ms-overflow-style: none;
