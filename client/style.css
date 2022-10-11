@@ -28,10 +28,12 @@ p {
   width: 80vw;
   outline: none;
   display: inline;
+  
 }
 
 #message-start {
   display: inline;
+  word-wrap: break-word;
 }
 
 #back, #settings {

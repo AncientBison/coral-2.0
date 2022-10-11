@@ -190,12 +190,12 @@ function escapeHtml(unsafe) {
  }
 
 addEventListener("load", () => {
-  console.log("cool!")
-  messageElement.addEventListener("keypress", function(event) {
-    
-    if (event.key == "Enter") {
+  messageElement.addEventListener("input", function(event) {
+
+    if (event.key == "Enter" || messageElement.innerHTML.includes("<br><br>")) { //messageElement.innerHTML.includes("<br><br>") fixes Android enter issue.
 
       debug(username);
+      
       event.preventDefault();
       if (username == "" && canSendUsername) {
         if (checkUsernameIncorrectFormat()) {
@@ -214,7 +214,7 @@ addEventListener("load", () => {
       sendCaretToEndOfMessageElement();
     }
 
-    document.getElementById("debug-mobile").innerText = escapeHtml(messageElement.innerHTML);
+    // document.getElementById("debug-mobile").innerText = escapeHtml(messageElement.innerHTML);
 
     console.log(messageElement.innerHTML)
 
@@ -274,8 +274,4 @@ for (let element of document.getElementsByClassName("room-element")) {
 window.addEventListener("resize", () => {
   document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight + "px";
   scrollToBottomOfMessages();
-  console.log(window.innerHeight);
-  console.log(document.getElementById("navbar").offsetHeight);
-  console.log(document.getElementById("messages").outerHeight)
-  console.log(window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight);
 });
