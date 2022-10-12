@@ -246,12 +246,12 @@ document.addEventListener("keypress", function() {
   messageElement.focus();
 });
 
-const scrollContainer = document.getElementById("navbar");
+// const scrollContainer = document.getElementById("navbar");
 
-scrollContainer.addEventListener("wheel", (evt) => {
-    evt.preventDefault();
-    scrollContainer.scrollLeft += evt.deltaY;
-}, {passive: true});
+// scrollContainer.addEventListener("wheel", (evt) => {
+//     evt.preventDefault();
+//     scrollContainer.scrollLeft += evt.deltaY;
+// }, {passive: true});
 
 function joinRoom(roomLocation) {
   if (roomLocation != room) {
@@ -272,6 +272,14 @@ for (let element of document.getElementsByClassName("room-element")) {
 }
 
 window.addEventListener("resize", () => {
-  document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight + "px";
+  document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("messages").outerHeight + "px";
   scrollToBottomOfMessages();
+});
+
+//sidebar
+const sidebar = document.getElementById('sidebar');
+const button = document.getElementById('toggle');
+
+button.addEventListener('click', _ => {
+  sidebar.classList.toggle('collapsed');
 });
