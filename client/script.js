@@ -49,6 +49,18 @@ class Message {
   }
 }
 
+function isDeviceiOS() {
+  return [
+    'iPad Simulator',
+    'iPhone Simulator',
+    'iPod Simulator',
+    'iPad',
+    'iPhone',
+    'iPod'
+  ].includes(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+}
+
+
 socket.on("connect", () => {
   connected = true;
   debug("Sucsessfully Connected to the Socket.");
@@ -123,6 +135,9 @@ function addMessage(message) {
 }
 
 window.onload = function() {
+  if (!isDeviceiOS()) {
+    document.getElementById("navbar").classList.add("bottom-fixed");
+  }
   messageElement = document.getElementById("message");
   messageElement.focus();
   setupUsernameEntrace();
@@ -246,12 +261,12 @@ document.addEventListener("keypress", function() {
   messageElement.focus();
 });
 
-// const scrollContainer = document.getElementById("navbar");
+const scrollContainer = document.getElementById("navbar");
 
-// scrollContainer.addEventListener("wheel", (evt) => {
-//     evt.preventDefault();
-//     scrollContainer.scrollLeft += evt.deltaY;
-// }, {passive: true});
+scrollContainer.addEventListener("wheel", (evt) => {
+    evt.preventDefault();
+    scrollContainer.scrollLeft += evt.deltaY;
+}, {passive: true});
 
 function joinRoom(roomLocation) {
   if (roomLocation != room) {
@@ -272,7 +287,7 @@ for (let element of document.getElementsByClassName("room-element")) {
 }
 
 window.addEventListener("resize", () => {
-  document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("messages").outerHeight + "px";
+  document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight + "px";
   scrollToBottomOfMessages();
 });
 
