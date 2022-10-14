@@ -4,6 +4,7 @@ const http = require("http");
 const server = http.createServer(app);
 const {Server} = require("socket.io");
 const io = new Server(server);
+const fs = require('fs');
 // const email = require("./email")
 // const database = require("./database.js")
 
@@ -37,6 +38,27 @@ app.get('*', function(req, res) {
   res.sendFile(__dirname + "/client" + req.params[0]);
 });
 
+function populateRoomMessagesToUser(socket, roomNumber) {
+  
+}
+
+function logNewMessage(message, room) {
+  // let rawdata = fs.readFileSync('student.json');
+  // let student = JSON.parse(rawdata);
+  // console.log(student);
+  try {
+    fs.writeFileSync(room, (function getNewData() {
+      console.log("hi");
+      let oldData = JSON.parse(fs.readFileSync(room + ".json"));
+      console.log("old" + oldData);
+      oldData.messages.push(message);
+      return JSON.stringify(newData, null, 2);
+    })()); //Sync is bad practice, change this later.
+  } catch (error) {
+    return;
+  }
+}
+
 function getRoomsForSocket(socket) {
   return Array.from(socket.rooms.values());
 }
@@ -61,7 +83,11 @@ io.on("connection", (socket) => {
               username: ${username}
               text: ${text}`);
     
+    
     io.in(getRoomsForSocket(socket)).emit("message", username, text);
+    for (room of getRoomsForSocket(socket)) {
+      logNewMessage({"username": username, "text": text}, room);
+    }
   });
   
   socket.once("disconnect", () => {
@@ -79,6 +105,8 @@ io.on("connection", (socket) => {
     socket.join("Room " + roomNumber);
 
     console.log(`User: ${socket.data.username} is now in rooms ${getRoomsForSocket(socket)}`);
+  
+    populateRoomMessagesToUser(socket, roomNumber);
   });
 
 });
