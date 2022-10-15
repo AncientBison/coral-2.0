@@ -1,14 +1,14 @@
 import Cookies from "/libraries/cookies-js/js.cookie.mjs"
 
 Object.defineProperty(Element.prototype, "outerHeight", {
-  "get": function() {
-      var height = this.clientHeight;
-      var computedStyle = window.getComputedStyle(this); 
-      height += parseInt(computedStyle.marginTop, 10);
-      height += parseInt(computedStyle.marginBottom, 10);
-      height += parseInt(computedStyle.borderTopWidth, 10);
-      height += parseInt(computedStyle.borderBottomWidth, 10);
-      return height;
+  "get": function () {
+    var height = this.clientHeight;
+    var computedStyle = window.getComputedStyle(this);
+    height += parseInt(computedStyle.marginTop, 10);
+    height += parseInt(computedStyle.marginBottom, 10);
+    height += parseInt(computedStyle.borderTopWidth, 10);
+    height += parseInt(computedStyle.borderBottomWidth, 10);
+    return height;
   }
 });
 
@@ -29,7 +29,7 @@ let canSendUsername = true;
 let room = "1";
 
 // if (Cookies.get("style") == undefined) {
-  // socket
+// socket
 // }
 
 function debug(text) {
@@ -38,7 +38,7 @@ function debug(text) {
   }
 }
 
-class Message {  
+class Message {
   constructor(username, text) {
     this.username = username;
     this.text = text;
@@ -88,7 +88,7 @@ async function sendMessage(message) {
   if (username == "") {
     return "No username";
   } else {
-      debug(`New message sent:
+    debug(`New message sent:
             username: ${username.trim()}
             text: ${message.text}`);
     socket.emit("message", message.username.trim(), message.text);
@@ -134,7 +134,7 @@ function addMessage(message) {
   cleanMessageLog();
 }
 
-window.onload = function() {
+window.onload = function () {
   if (!isDeviceiOS()) {
     document.getElementById("navbar").classList.add("bottom-fixed");
   }
@@ -182,7 +182,7 @@ function incorrectInputFormat(reason) {
   messageElement.innerText = reason;
   canSendUsername = false;
   incorrectFormatErroring = true;
-  setTimeout(function() {
+  setTimeout(function () {
     messageElement.setAttribute("contenteditable", "true");
     messageElement.setAttribute("style", ""); //TODO: Change when style works.
     messageElement.innerText = triedUsername;
@@ -196,21 +196,21 @@ const MIN_USERNAME_LENGTH = 2;
 const MAX_USERNAME_LENGTH = 25;
 
 function escapeHtml(unsafe) {
-    return unsafe
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
- }
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 addEventListener("load", () => {
-  messageElement.addEventListener("input", function(event) {
+  messageElement.addEventListener("input", function (event) {
 
     if (event.key == "Enter" || messageElement.innerHTML.includes("<br><br>")) { //messageElement.innerHTML.includes("<br><br>") fixes Android enter issue.
 
       debug(username);
-      
+
       event.preventDefault();
       if (username == "" && canSendUsername) {
         if (checkUsernameIncorrectFormat()) {
@@ -224,7 +224,7 @@ addEventListener("load", () => {
         messageElement.innerText = "";
       }
     }
-    
+
     if (getSelectionStart() != messageElement) {
       sendCaretToEndOfMessageElement();
     }
@@ -237,36 +237,36 @@ addEventListener("load", () => {
 });
 
 function checkUsernameIncorrectFormat() {
-switch (true) {
-  case messageElement.innerText.trim().length <= MIN_USERNAME_LENGTH:
-    return `Username must be more than ${MIN_USERNAME_LENGTH} characters.`;
-  case messageElement.innerText.trim().length >= MAX_USERNAME_LENGTH:
-    return `Username must be less than ${MAX_USERNAME_LENGTH} characters.`;
-  case /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g.test(messageElement.innerText):
-    return `Username cannot contain emojis.`;
-  default:
-    ""
+  switch (true) {
+    case messageElement.innerText.trim().length <= MIN_USERNAME_LENGTH:
+      return `Username must be more than ${MIN_USERNAME_LENGTH} characters.`;
+    case messageElement.innerText.trim().length >= MAX_USERNAME_LENGTH:
+      return `Username must be less than ${MAX_USERNAME_LENGTH} characters.`;
+    case /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g.test(messageElement.innerText):
+      return `Username cannot contain emojis.`;
+    default:
+      ""
   }
 }
 
 // messageElement.addEventListener("keydown", function(event) {
-  
+
 // });
 
-document.addEventListener("mouseup", function() {
+document.addEventListener("mouseup", function () {
   messageElement.focus();
 });
 
-document.addEventListener("keypress", function() {
+document.addEventListener("keypress", function () {
   messageElement.focus();
 });
 
 const scrollContainer = document.getElementById("navbar");
 
 scrollContainer.addEventListener("wheel", (evt) => {
-    evt.preventDefault();
-    scrollContainer.scrollLeft += evt.deltaY;
-}, {passive: true});
+  evt.preventDefault();
+  scrollContainer.scrollLeft += evt.deltaY;
+}, { passive: true });
 
 function joinRoom(roomLocation) {
   if (roomLocation != room) {
@@ -287,14 +287,9 @@ for (let element of document.getElementsByClassName("room-element")) {
 }
 
 window.addEventListener("resize", () => {
-  document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight + "px";
+  console.log(window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight);
+  console.log(document.getElementById("navbar").offsetHeight);
+  console.log(document.getElementById("messages").outerHeight);
+  document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("navbar").offsetHeight - (document.getElementById("messages").outerHeight - document.getElementById("messages").offsetHeight) + "px";
   scrollToBottomOfMessages();
-});
-
-//sidebar
-const sidebar = document.getElementById('sidebar');
-const button = document.getElementById('toggle');
-
-button.addEventListener('click', _ => {
-  sidebar.classList.toggle('collapsed');
 });

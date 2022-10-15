@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const http = require("http");
 const server = http.createServer(app);
-const {Server} = require("socket.io");
+const { Server } = require("socket.io");
 const io = new Server(server);
 const fs = require('fs');
 // const email = require("./email")
@@ -11,9 +11,9 @@ const fs = require('fs');
 // email.sendEmail("isb271@students.needham.k12.ma.us", "I like pie!");
 
 // exampleUser = {
-  // "username": "John Doe",
-  // "email": "john.doe@example.com",
-  // "password": "dv cng edfascxvd gv nhhngcbpassword"
+// "username": "John Doe",
+// "email": "john.doe@example.com",
+// "password": "dv cng edfascxvd gv nhhngcbpassword"
 // }
 
 // database.addUser(exampleUser);
@@ -30,16 +30,27 @@ const HOME_PAGE = "index.html"
 
 const DEFAULT_ROOM = "Room 1"
 
+const MAX_MESSAGE_LOG_MEMORY = 100;
+
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/client/" + HOME_PAGE);
 });
 
-app.get('*', function(req, res) {
+app.get('*', function (req, res) {
   res.sendFile(__dirname + "/client" + req.params[0]);
 });
 
 function populateRoomMessagesToUser(socket, roomNumber) {
-  
+  try {
+    let data = JSON.parse(fs.readFileSync("Room " + roomNumber + ".json"));
+    console.log(data);
+    for (message of data.messages) {
+      socket.emit("message", message.username, message.text);
+    }
+    // socket.emit("message", username, text);
+  } catch (error) {
+    return;
+  }
 }
 
 function logNewMessage(message, room) {
@@ -47,12 +58,15 @@ function logNewMessage(message, room) {
   // let student = JSON.parse(rawdata);
   // console.log(student);
   try {
-    fs.writeFileSync(room, (function getNewData() {
-      console.log("hi");
+    fs.writeFileSync(room + ".json", (function getNewData() {
       let oldData = JSON.parse(fs.readFileSync(room + ".json"));
-      console.log("old" + oldData);
+      // console.log("old: " + JSON.stringify(oldData), null, 2);
       oldData.messages.push(message);
-      return JSON.stringify(newData, null, 2);
+      if (oldData.messages.length > MAX_MESSAGE_LOG_MEMORY) {
+        oldData.messages.shift();
+      }
+      // console.log("new: " + JSON.stringify(oldData), null, 2);
+      return JSON.stringify(oldData, null, 2);
     })()); //Sync is bad practice, change this later.
   } catch (error) {
     return;
@@ -70,32 +84,32 @@ io.on("connection", (socket) => {
     id: user
   });
 
-  socket.join("Room 1")
-  
+  socket.join(DEFAULT_ROOM);
+
   socket.data.username = "";
-  
+
   socket.once("setUsername", (username) => {
     socket.data.username = username;
   });
-  
+
   socket.on("message", (username, text) => {
-  console.log(`New message received:
+    console.log(`New message received:
               username: ${username}
               text: ${text}`);
-    
-    
+
+
     io.in(getRoomsForSocket(socket)).emit("message", username, text);
     for (room of getRoomsForSocket(socket)) {
-      logNewMessage({"username": username, "text": text}, room);
+      logNewMessage({ "username": username, "text": text }, room);
     }
   });
-  
+
   socket.once("disconnect", () => {
     user = users.find(o => o.id === id);
     delete user;
   });
 
-  socket.on("change room", (roomNumber) => {    
+  socket.on("change room", (roomNumber) => {
     socket.leave("Room 1");
     socket.leave("Room 2");
     socket.leave("Room 3");
@@ -105,7 +119,7 @@ io.on("connection", (socket) => {
     socket.join("Room " + roomNumber);
 
     console.log(`User: ${socket.data.username} is now in rooms ${getRoomsForSocket(socket)}`);
-  
+
     populateRoomMessagesToUser(socket, roomNumber);
   });
 
