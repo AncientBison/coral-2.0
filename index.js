@@ -40,10 +40,9 @@ app.get('*', function (req, res) {
   res.sendFile(__dirname + "/client" + req.params[0]);
 });
 
-function populateRoomMessagesToUser(socket, roomNumber) {
+function populateRoomMessagesToUser(socket, room) {
   try {
-    let data = JSON.parse(fs.readFileSync("Room " + roomNumber + ".json"));
-    console.log(data);
+    let data = JSON.parse(fs.readFileSync(room + ".json"));
     for (message of data.messages) {
       socket.emit("message", message.username, message.text);
     }
@@ -54,18 +53,13 @@ function populateRoomMessagesToUser(socket, roomNumber) {
 }
 
 function logNewMessage(message, room) {
-  // let rawdata = fs.readFileSync('student.json');
-  // let student = JSON.parse(rawdata);
-  // console.log(student);
   try {
     fs.writeFileSync(room + ".json", (function getNewData() {
       let oldData = JSON.parse(fs.readFileSync(room + ".json"));
-      // console.log("old: " + JSON.stringify(oldData), null, 2);
       oldData.messages.push(message);
       if (oldData.messages.length > MAX_MESSAGE_LOG_MEMORY) {
         oldData.messages.shift();
       }
-      // console.log("new: " + JSON.stringify(oldData), null, 2);
       return JSON.stringify(oldData, null, 2);
     })()); //Sync is bad practice, change this later.
   } catch (error) {
@@ -85,6 +79,8 @@ io.on("connection", (socket) => {
   });
 
   socket.join(DEFAULT_ROOM);
+
+  populateRoomMessagesToUser(socket, DEFAULT_ROOM);
 
   socket.data.username = "";
 
@@ -120,7 +116,7 @@ io.on("connection", (socket) => {
 
     console.log(`User: ${socket.data.username} is now in rooms ${getRoomsForSocket(socket)}`);
 
-    populateRoomMessagesToUser(socket, roomNumber);
+    populateRoomMessagesToUser(socket, "Room " + roomNumber);
   });
 
 });
