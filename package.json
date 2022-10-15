@@ -10,8 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "@replit/database": "^2.0.2",
+    "bcrypt": "^5.1.0",
     "express": "^4.17.3",
     "jquery": "^3.6.0",
+    "mongoose": "^6.6.5",
     "nodemailer": "^6.7.5",
     "socket.io": "^4.4.1",
     "uuid": "^8.3.2"

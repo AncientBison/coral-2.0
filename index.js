@@ -6,14 +6,14 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const fs = require('fs');
 // const email = require("./email")
-// const database = require("./database.js")
+const database = require("./database.js")
 
 // email.sendEmail("isb271@students.needham.k12.ma.us", "I like pie!");
 
 // exampleUser = {
 // "username": "John Doe",
 // "email": "john.doe@example.com",
-// "password": "dv cng edfascxvd gv nhhngcbpassword"
+// "password": "p4ssw0rd"
 // }
 
 // database.addUser(exampleUser);
