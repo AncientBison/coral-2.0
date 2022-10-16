@@ -32,6 +32,8 @@ const DEFAULT_ROOM = "Room 1"
 
 const MAX_MESSAGE_LOG_MEMORY = 100;
 
+database.setMaxMessageLogMemory(MAX_MESSAGE_LOG_MEMORY);
+
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/client/" + HOME_PAGE);
 });
@@ -40,28 +42,14 @@ app.get('*', function (req, res) {
   res.sendFile(__dirname + "/client" + req.params[0]);
 });
 
-function populateRoomMessagesToUser(socket, room) {
+async function populateRoomMessagesToUser(socket, room) {
+  console.log(room);
   try {
-    let data = JSON.parse(fs.readFileSync(room + ".json"));
-    for (message of data.messages) {
+    let messages = await database.getMessages(room);
+    console.log(messages);
+    for (message of messages) {
       socket.emit("message", message.username, message.text);
     }
-    // socket.emit("message", username, text);
-  } catch (error) {
-    return;
-  }
-}
-
-function logNewMessage(message, room) {
-  try {
-    fs.writeFileSync(room + ".json", (function getNewData() {
-      let oldData = JSON.parse(fs.readFileSync(room + ".json"));
-      oldData.messages.push(message);
-      if (oldData.messages.length > MAX_MESSAGE_LOG_MEMORY) {
-        oldData.messages.shift();
-      }
-      return JSON.stringify(oldData, null, 2);
-    })()); //Sync is bad practice, change this later.
   } catch (error) {
     return;
   }
@@ -96,7 +84,7 @@ io.on("connection", (socket) => {
 
     io.in(getRoomsForSocket(socket)).emit("message", username, text);
     for (room of getRoomsForSocket(socket)) {
-      logNewMessage({ "username": username, "text": text }, room);
+      database.newMessage({ "username": username, "text": text }, room);
     }
   });
 

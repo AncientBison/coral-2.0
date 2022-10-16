@@ -7,7 +7,11 @@ RegExp.escape = function(text) {
 
 const saltRounds = 10;
 
-const MAX_MESSAGES_MEMORY_LOG = 10;
+var maxMessageLogMemory = 10;
+
+function setMaxMessageLogMemory(newValue) {
+  maxMessageLogMemory = newValue;
+}
 
 const User = mongoose.model("User", {
   username: String, 
@@ -47,21 +51,22 @@ mongoose.connection.on('connected', async function() {
 
   // console.log(encoded);
 
-  const exampleUserJSON = {
-    "username": "John Doe",
-    "password": "passw0rd",
-    "email": "john.doe@example.com"
-  };
+  // const exampleUserJSON = {
+  //   "username": "John Doe",
+  //   "password": "passw0rd",
+  //   "email": "john.doe@example.com"
+  // };
 
-  const exampleMessageJSON = {
-    "username": "John Doe",
-    "text": "Test!"
-  };
+  // const exampleMessageJSON = {
+  //   "username": "John Doe",
+  //   "text": "Test232!"
+  // };
   // exampleUser.save().then(()
 
-  newMessage(exampleMessageJSON, "Room 1");
+  // newMessage(exampleMessageJSON, "Room 1425");
 
   // console.log(await getUserFromUsername("John Doe"));
+  // console.log(await getMessages("Room 1425"))
 });
 
 async function saltAndHash(password) {
@@ -146,6 +151,20 @@ async function getUserFromUsername(username) {
   return user;
 }
 
+async function createRoom(room) {
+  return new Promise(function(resolve, reject) {
+    Room.create({"name": room, "messages": []}, function (err, result) {
+      if (err) {
+        console.log(err);
+        reject();
+        return;
+      }
+
+      resolve(result);
+    });
+  });
+}
+
 async function newMessage(message, room) {
   const messageModel = new Message(message);
 
@@ -153,12 +172,35 @@ async function newMessage(message, room) {
     "name": room
   });
 
-  console.log(roomExists);
+  // console.log(roomExists);
+  let roomLocated = null;
   if (!roomExists) {
-    return "No room found";
+    await createRoom(room).then((roomLocated) => {
+      roomLocated.updateOne({"$push": {"messages": {"$each": [messageModel], "$slice": -maxMessageLogMemory}}}, function(err, result) {
+        if (err) {
+          console.log(err);
+          return "Failed";
+        } else {
+          console.log(result);
+          return "Saved";
+        }
+      });
+    });
+    return "Saved";
   }
 
-  Room.update({"name": room}, {"$push": {"messages": {"$each": [messageModel], "$slice": -MAX_MESSAGES_MEMORY_LOG}}});
+  // console.log(await Room.exists({
+  //   "name": room
+  // }));
+
+  Room.updateOne({"name": room}, {"$push": {"messages": {"$each": [messageModel], "$slice": -maxMessageLogMemory}}}, function(err, result) {
+    if (err) {
+      console.log(err);
+      return "Failed";
+    } else {
+      return "Saved";
+    }
+  });
   // Room.updateOne({name: room}, {$push: {messages: [messageModel]}}, function(err, result) {
   //   if (err) {
   //     console.log(err);
@@ -170,9 +212,23 @@ async function newMessage(message, room) {
   // });
 }
 
+async function getMessages(room) {
+  let roomDocument = await Room.findOne({"name": room}).exec();
+  
+  if (!roomDocument) {
+    await createRoom(room).then((roomLocated) => {
+      return roomLocated.messages;
+    });
+  }
+
+  return roomDocument.messages;
+}
+
 module.exports = {
   signUp: signUp,
   signIn: signIn,
   getUser: getUserFromUsername,
-  newMessage: newMessage
+  newMessage: newMessage, 
+  getMessages: getMessages, 
+  setMaxMessageLogMemory: setMaxMessageLogMemory
 };
