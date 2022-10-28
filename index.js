@@ -46,8 +46,7 @@ async function populateRoomMessagesToUser(socket, room) {
   console.log(room);
   try {
     let messages = await database.getMessages(room);
-    console.log(messages);
-    for (message of messages) {
+    for (let message of messages) {
       socket.emit("message", message.username, message.text);
     }
   } catch (error) {
@@ -105,6 +104,28 @@ io.on("connection", (socket) => {
     console.log(`User: ${socket.data.username} is now in rooms ${getRoomsForSocket(socket)}`);
 
     populateRoomMessagesToUser(socket, "Room " + roomNumber);
+  });
+
+  socket.on("change room", (roomNumber) => {
+    socket.leave("Room 1");
+    socket.leave("Room 2");
+    socket.leave("Room 3");
+    socket.leave("Room 4");
+    socket.leave("Room 5");
+    // Make dynamic.
+    socket.join("Room " + roomNumber);
+
+    console.log(`User: ${socket.data.username} is now in rooms ${getRoomsForSocket(socket)}`);
+
+    populateRoomMessagesToUser(socket, "Room " + roomNumber);
+  });
+
+  socket.on("sign in", (userInfo) => {
+    socket.emit("sign in result", database.signIn(userInfo));
+  });
+
+  socket.on("sign up", (userInfo) => {
+    socket.emit("sign up result", database.signUp(userInfo));
   });
 
 });

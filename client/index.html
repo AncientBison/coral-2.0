@@ -17,15 +17,37 @@
 <body>
   <!--TODO: ADD STYLING   <span class="material-symbols-outlined" id="settings"><a href="settings.html">settings</a></span> -->
   <div class="navbar" id="navbar">
-    <a class="room-element active" data-to="1" id="room1" href="#room1">Room 1</a>
-    <a class="room-element" data-to="2" id="room2" href="#room2">Room 2</a>
-    <a class="room-element" data-to="3" id="room3" href="#room3">Room 3</a>
-    <a class="room-element" data-to="4" id="room4" href="#room4">Room 4</a>
-    <a class="room-element" data-to="5" id="room5" href="#room5">Room 5</a>
+    <a class="material-symbols-outlined navbar-navigation" id="account-button" href="#account">person</a>
+    <a class="room-element navbar-navigation active" data-to="1" id="room1" href="#room1">Room 1</a>
+    <a class="room-element navbar-navigation" data-to="2" id="room2" href="#room2">Room 2</a>
+    <a class="room-element navbar-navigation" data-to="3" id="room3" href="#room3">Room 3</a>
+    <a class="room-element navbar-navigation" data-to="4" id="room4" href="#room4">Room 4</a>
+    <a class="room-element navbar-navigation" data-to="5" id="room5" href="#room5">Room 5</a>
   </div>
   <div id="messages">
     <p id="message-start">></p><span contenteditable id="message" autofocus autocapitalize="off" autocomplete="off"
       autocorrect="off"></span>
+  </div>
+
+  <div id="account" class="hidden">
+    <h1>Settings:</h1>
+    <label for="elements" class="settings-label">Choose an option:</label><select name="elements" id="element-selector">
+      <option value="signIn" selected>Sign In</option>
+      <option value="signUp">Sign Up</option>
+    </select>
+    <div id="signIn">
+      <label for="username" class="settings-label">Username:</label><input class="settings-input" name="username" id="username" minlength=2 maxlength=25></input>
+      <br/>
+      <label for="password" class="settings-label">Password:</label><input type="password" class="settings-input" name="password" id="password"></input>
+      <br/>
+      <span id="email-box" class="hidden"><label for="password" class="settings-label">Email:</label><input type="email" class="settings-input" name="password" id="email"></input></span>
+      <br/>
+      <p class="settings-label settings-validator hidden" id="validator"> gtew g ew</p>
+    </div>
+    <button class="button-3" role="button" id="settings-confirm">Submit</button>
+<!--     <div id="signUp"> -->
+<!--        -->
+<!--     </div> -->
   </div>
   <!-- <pre id="debug-mobile"></pre> -->
   <script src="/socket.io/socket.io.js"></script>

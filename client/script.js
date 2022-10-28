@@ -28,6 +28,8 @@ let canSendUsername = true;
 
 let room = "1";
 
+let settingsOpen = false;
+
 // if (Cookies.get("style") == undefined) {
 // socket
 // }
@@ -71,7 +73,7 @@ socket.on("disconnect", () => {
   debug("Disconnected from the Socket.");
 });
 
-socket.on("message", (username, text) => { //NEVER SENDS MESSAGE! PROBLEM WITH ENTER CASE?
+socket.on("message", (username, text) => {
   debug(`New message received:
               username: ${username}
               text: ${text}`);
@@ -79,7 +81,7 @@ socket.on("message", (username, text) => { //NEVER SENDS MESSAGE! PROBLEM WITH E
   addMessage(message);
 });
 
-async function sendUsername() {
+async function sendUsername() { //2.0USR
   debug(`Set username to: ${username}`)
   socket.emit("setUsername", username);
 }
@@ -89,9 +91,9 @@ async function sendMessage(message) {
     return "No username";
   } else {
     debug(`New message sent:
-            username: ${username.trim()}
+            username: ${username}
             text: ${message.text}`);
-    socket.emit("message", message.username.trim(), message.text);
+    socket.emit("message", message.username, message.text);
   }
 }
 
@@ -140,10 +142,10 @@ window.onload = function () {
   }
   messageElement = document.getElementById("message");
   messageElement.focus();
-  setupUsernameEntrace();
+  setupUsernameEntrace();//2.0USR
 }
 
-function setupUsernameEntrace() {
+function setupUsernameEntrace() {//2.0USR
   document.getElementById("message-start").innerText = ">Enter Username:";
 }
 
@@ -152,7 +154,7 @@ function getSelectionStart() {
   return (node.nodeType == 3 ? node.parentNode : node);
 }
 
-function getAndSendUsername() {
+function getAndSendUsername() {//2.0USR
   username = messageElement.innerText;
   messageElement.innerText = "";
   document.getElementById("message-start").innerText = ">";
@@ -176,7 +178,7 @@ const SHOW_ERROR_TIME = 500;
 let incorrectFormatErroring = false;
 
 function incorrectInputFormat(reason) {
-  let triedUsername = messageElement.innerText;
+  let triedContent = messageElement.innerText;
   messageElement.setAttribute("contenteditable", "");
   messageElement.setAttribute("style", "color: red; caret-color: transparent;"); //TODO: Change when style works.
   messageElement.innerText = reason;
@@ -185,7 +187,7 @@ function incorrectInputFormat(reason) {
   setTimeout(function () {
     messageElement.setAttribute("contenteditable", "true");
     messageElement.setAttribute("style", ""); //TODO: Change when style works.
-    messageElement.innerText = triedUsername;
+    messageElement.innerText = triedContent;
     sendCaretToEndOfMessageElement();
     canSendUsername = true;
     incorrectFormatErroring = false;
@@ -243,9 +245,9 @@ function checkUsernameIncorrectFormat() {
     case messageElement.innerText.trim().length >= MAX_USERNAME_LENGTH:
       return `Username must be less than ${MAX_USERNAME_LENGTH} characters.`;
     case /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g.test(messageElement.innerText):
-      return `Username cannot contain emojis.`;
+      return "Username cannot contain emojis.";
     default:
-      ""
+      return "";
   }
 }
 
@@ -254,11 +256,15 @@ function checkUsernameIncorrectFormat() {
 // });
 
 document.addEventListener("mouseup", function () {
-  messageElement.focus();
+  if (!settingsOpen) {
+    messageElement.focus();
+  }
 });
 
 document.addEventListener("keypress", function () {
-  messageElement.focus();
+  if (!settingsOpen) {
+    messageElement.focus();
+  }
 });
 
 const scrollContainer = document.getElementById("navbar");
@@ -277,19 +283,88 @@ function joinRoom(roomLocation) {
   }
 }
 
-for (let element of document.getElementsByClassName("room-element")) {
-  element.addEventListener("click", () => {
-    document.getElementById("room" + room).classList.remove("active");
-    element.classList.add("active");
+let oldRoomElementID = "room" + room;
 
-    joinRoom(element.dataset.to);
+for (let element of document.getElementsByClassName("navbar-navigation")) {
+  element.addEventListener("click", () => {
+    document.getElementById(oldRoomElementID).classList.remove("active");
+    element.classList.add("active");
+    oldRoomElementID = element.id;
+    
+    if (element.classList.contains("room-element")) {
+      joinRoom(element.dataset.to);
+      openMessages();
+    }
+
+    if (element.id == "account-button") {
+      toggleSettings();
+    }
   });
 }
 
 window.addEventListener("resize", () => {
-  console.log(window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight);
-  console.log(document.getElementById("navbar").offsetHeight);
-  console.log(document.getElementById("messages").outerHeight);
+  // console.log(window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight);
+  // console.log(document.getElementById("navbar").offsetHeight);
+  // console.log(document.getElementById("messages").outerHeight);
   document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("navbar").offsetHeight - (document.getElementById("messages").outerHeight - document.getElementById("messages").offsetHeight) + "px";
   scrollToBottomOfMessages();
+});
+
+function toggleSettings() {
+  console.log(settingsOpen);
+  if (!settingsOpen) {
+    document.getElementById("account").classList.remove("hidden");
+    document.getElementById("messages").classList.add("hidden");
+  } else {
+    document.getElementById("account").classList.add("hidden");
+    document.getElementById("messages").classList.remove("hidden");
+  }
+
+  settingsOpen = !settingsOpen;
+ }
+
+function openMessages() {
+  if (settingsOpen) {
+    document.getElementById("account").classList.add("hidden");
+    document.getElementById("messages").classList.remove("hidden");
+    settingsOpen = false;
+  }
+}
+
+//Settings
+
+let signedIn = false;
+let signingInOrUp = "sign in";
+
+
+function signInOrUp() {
+  if (signingInOrUp == "sign in") {
+    socket.emit("sign in", getUserInfo());
+  } else {
+    socket.emit("sign up", getUserInfo());
+  }
+}
+
+socket.on("sign in result", function() {
+  
+});
+
+document.getElementById("element-selector").addEventListener("change", function() {
+  if (document.getElementById("element-selector").value == "signIn") {
+    document.getElementById("email-box").classList.add("hidden");
+    signingInOrUp = "sign in";
+  } else {
+    document.getElementById("email-box").classList.remove("hidden");
+    signingInOrUp = "sign up";
+  }
+});
+
+document.getElementById("settings-confirm").addEventListener("click", function() {
+  // if (signedIn) {
+    // signOut();
+    // return;
+  // }
+  
+  signInOrUp();
+  
 });

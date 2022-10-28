@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require ("bcrypt");
+const bcrypt = require("bcrypt");
 
 RegExp.escape = function(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");

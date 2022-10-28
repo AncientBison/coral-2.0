@@ -45,8 +45,8 @@ p {
 }
 
 .material-symbols-outlined {
-  width: fit-content;
-  height: fit-content;
+/*   width: fit-content; */
+/*   height: fit-content; */
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48;
 }
 
@@ -97,7 +97,7 @@ a {
 
 .navbar a {
   float: left;
-  flex-direction: column;
+  flex-direction: row;
   /* display: flex; */
   color: #f2f2f2;
   text-align: center;
@@ -120,5 +120,90 @@ a {
 
 .navbar .active {
   background-color: #0062ff !important;
-  color: white !important;
+}
+
+.settings-input {
+  border: 2px solid lightgray;
+  display: inline-block;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: inherit;
+  font-size: inherit;
+/*   padding: none; */
+  width: 100%;
+  max-width: fill-available;
+  background-color: inherit;
+  color: inherit;
+}
+
+.button-3 {
+  appearance: none;
+  background-color: #2ea44f;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.button-3:focus:not(:focus-visible):not(.focus-visible) {
+  box-shadow: none;
+  outline: none;
+}
+
+.button-3:hover {
+  background-color: #2c974b;
+}
+
+.button-3:focus {
+  box-shadow: rgba(46, 164, 79, .4) 0 0 0 3px;
+  outline: none;
+}
+
+.button-3:disabled {
+  background-color: #94d3a2;
+  border-color: rgba(27, 31, 35, .1);
+  color: rgba(255, 255, 255, .8);
+  cursor: default;
+}
+
+.button-3:active {
+  background-color: #298e46;
+  box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+}
+
+#account {
+  max-width: 500px;
+}
+
+.hidden {
+  display: none;
+}
+
+.settings-label {
+  display: inline-block;
+  margin-bottom: 10px;
+  margin-right: 1em;
+}
+
+.settings-label.settings-validator {
+  color: red;
 }
