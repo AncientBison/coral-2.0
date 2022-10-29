@@ -1,4 +1,5 @@
 var nodemailer = require('nodemailer');
+require("dotenv").config()
 
 const emailPassword = process.env['emailPassword']
 

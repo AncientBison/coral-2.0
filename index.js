@@ -7,6 +7,7 @@ const io = new Server(server);
 const fs = require('fs');
 // const email = require("./email")
 const database = require("./database.js")
+require('dotenv').config()
 
 // email.sendEmail("isb271@students.needham.k12.ma.us", "I like pie!");
 
@@ -76,10 +77,11 @@ io.on("connection", (socket) => {
               username: ${username}
               text: ${text}`);
 
-
-    io.in(getRoomsForSocket(socket)).emit("message", username, text);
-    for (room of getRoomsForSocket(socket)) {
-      database.newMessage({ "username": username, "text": text }, room);
+    if (username == socket.data.username) {
+      io.in(getRoomsForSocket(socket)).emit("message", username, text);
+      for (room of getRoomsForSocket(socket)) {
+        database.newMessage({ "username": username, "text": text }, room);
+      }
     }
   });
 
@@ -126,7 +128,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sign up", async (userInfo) => {
-    let result = await database.signIn(userInfo);
+    let result = await database.signUp(userInfo);
+    console.log("signing up");
     socket.emit("sign in result", result);
     if (result.success) {
       socket.data.username = userInfo.username;

@@ -173,9 +173,6 @@ function incorrectInputFormat(reason) {
   }, SHOW_ERROR_TIME);
 }
 
-const MIN_USERNAME_LENGTH = 2;
-const MAX_USERNAME_LENGTH = 25;
-
 function escapeHtml(unsafe) {
   return unsafe
     .replace(/&/g, "&amp;")
@@ -204,19 +201,6 @@ addEventListener("load", () => {
 
   });
 });
-
-function checkUsernameIncorrectFormat() {
-  switch (true) {
-    case messageElement.innerText.trim().length <= MIN_USERNAME_LENGTH:
-      return `Username must be more than ${MIN_USERNAME_LENGTH} characters.`;
-    case messageElement.innerText.trim().length >= MAX_USERNAME_LENGTH:
-      return `Username must be less than ${MAX_USERNAME_LENGTH} characters.`;
-    case /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g.test(messageElement.innerText):
-      return "Username cannot contain emojis.";
-    default:
-      return "";
-  }
-}
 
 // messageElement.addEventListener("keydown", function(event) {
 
@@ -307,6 +291,15 @@ function getUserInfo() {
   }
 }
 
+function signOut() {
+  signedIn = false;
+  username = "";
+  document.getElementById("settings-confirm").innerText = "Comfirm";
+  document.getElementById("main-account-settings").classList.remove("hidden");
+  document.getElementById("settings-confirm").classList.remove("button-3-red");
+  
+}
+
 async function signInOrUp() {
   if (signingInOrUp == "sign in") {
     await socket.emit("sign in", getUserInfo());
@@ -317,8 +310,12 @@ async function signInOrUp() {
 
 socket.on("sign in result", function(result) {
   if (result.success) {
-    username = result.triedData.username;
-    console.log(result);
+    username = result.triedData;
+    signedIn = true;
+    document.getElementById("settings-confirm").innerText = "Sign Out";
+    document.getElementById("main-account-settings").classList.add("hidden");
+    document.getElementById("settings-confirm").classList.add("button-3-red");
+    document.getElementById("validator").classList.add("hidden");
   } else {
     document.getElementById("validator").classList.remove("hidden");
     document.getElementById("validator").innerText = result.result;

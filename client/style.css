@@ -7,6 +7,7 @@ body {
   margin: 0;
   font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
   overflow: none;
+  color-scheme: dark;
 }
 
 p {
@@ -157,7 +158,6 @@ a {
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  vertical-align: middle;
   white-space: nowrap;
   display: block;
   margin-left: auto;
@@ -188,6 +188,30 @@ a {
 .button-3:active {
   background-color: #298e46;
   box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+}
+
+.button-3.button-3-red {
+  background-color: #a42e2e;
+}
+
+.button-3.button-3-red:hover {
+  background-color: #972c2c;
+}
+
+.button-3.button-3-red:focus {
+  box-shadow: rgba(164, 46, 46, 0.4) 0 0 0 3px;
+}
+
+.button-3.button-3-red:disabled {
+  background-color: #d39494;
+  border-color: rgba(27, 31, 35, .1);
+  color: rgba(255, 255, 255, .8);
+  cursor: default;
+}
+
+.button-3.button-3-red:active {
+  background-color: #8e2929;
+  box-shadow: rgba(70, 20, 20, 0.2) 0 1px 0 inset;
 }
 
 #account {

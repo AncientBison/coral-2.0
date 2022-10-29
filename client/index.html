@@ -31,19 +31,21 @@
 
   <div id="account" class="hidden">
     <h1>Settings:</h1>
-    <label for="elements" class="settings-label">Choose an option:</label><select name="elements" id="element-selector">
-      <option value="signIn" selected>Sign In</option>
-      <option value="signUp">Sign Up</option>
-    </select>
-    <div id="signIn">
-      <label for="username" class="settings-label">Username:</label><input class="settings-input" name="username" id="username" minlength=2 maxlength=25></input>
-      <br/>
-      <label for="password" class="settings-label">Password:</label><input type="password" class="settings-input" name="password" id="password"></input>
-      <br/>
-      <span id="email-box" class="hidden"><label for="password" class="settings-label">Email:</label><input type="email" class="settings-input" name="password" id="email"></input></span>
-      <br/>
-      <p class="settings-label settings-validator hidden" id="validator"></p>
-    </div>
+    <span id="main-account-settings">
+      <label for="elements" class="settings-label">Choose an option:</label><select name="elements" id="element-selector">
+        <option value="signIn" selected>Sign In</option>
+        <option value="signUp">Sign Up</option>
+      </select>
+      <div id="signIn">
+        <label for="username" class="settings-label">Username:</label><input class="settings-input" name="username" id="username" minlength=2 maxlength=25></input>
+        <br/>
+        <label for="password" class="settings-label">Password:</label><input type="password" class="settings-input" name="password" id="password"></input>
+        <br/>
+        <span id="email-box" class="hidden"><label for="password" class="settings-label">Email:</label><input type="email" class="settings-input" name="password" id="email"></input></span>
+        <br/>
+        <p class="settings-label settings-validator hidden" id="validator"></p>
+      </div>
+    </span>
     <button class="button-3" role="button" id="settings-confirm">Submit</button>
 <!--     <div id="signUp"> -->
 <!--        -->
