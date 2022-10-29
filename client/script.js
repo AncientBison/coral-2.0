@@ -24,8 +24,6 @@ let messageElement;
 
 const DEBUG = true;
 
-let canSendUsername = true;
-
 let room = "1";
 
 let settingsOpen = false;
@@ -80,11 +78,6 @@ socket.on("message", (username, text) => {
   let message = new Message(username, text);
   addMessage(message);
 });
-
-async function sendUsername() { //2.0USR
-  debug(`Set username to: ${username}`)
-  socket.emit("setUsername", username);
-}
 
 async function sendMessage(message) {
   if (username == "") {
@@ -142,23 +135,11 @@ window.onload = function () {
   }
   messageElement = document.getElementById("message");
   messageElement.focus();
-  setupUsernameEntrace();//2.0USR
-}
-
-function setupUsernameEntrace() {//2.0USR
-  document.getElementById("message-start").innerText = ">Enter Username:";
 }
 
 function getSelectionStart() {
   let node = document.getSelection().anchorNode;
   return (node.nodeType == 3 ? node.parentNode : node);
-}
-
-function getAndSendUsername() {//2.0USR
-  username = messageElement.innerText;
-  messageElement.innerText = "";
-  document.getElementById("message-start").innerText = ">";
-  sendUsername();
 }
 
 function sendCaretToEndOfMessageElement() {
@@ -182,14 +163,12 @@ function incorrectInputFormat(reason) {
   messageElement.setAttribute("contenteditable", "");
   messageElement.setAttribute("style", "color: red; caret-color: transparent;"); //TODO: Change when style works.
   messageElement.innerText = reason;
-  canSendUsername = false;
   incorrectFormatErroring = true;
   setTimeout(function () {
     messageElement.setAttribute("contenteditable", "true");
     messageElement.setAttribute("style", ""); //TODO: Change when style works.
     messageElement.innerText = triedContent;
     sendCaretToEndOfMessageElement();
-    canSendUsername = true;
     incorrectFormatErroring = false;
   }, SHOW_ERROR_TIME);
 }
@@ -210,30 +189,18 @@ addEventListener("load", () => {
   messageElement.addEventListener("input", function (event) {
 
     if (event.key == "Enter" || messageElement.innerHTML.includes("<br><br>")) { //messageElement.innerHTML.includes("<br><br>") fixes Android enter issue.
-
-      debug(username);
-
       event.preventDefault();
-      if (username == "" && canSendUsername) {
-        if (checkUsernameIncorrectFormat()) {
-          incorrectInputFormat(checkUsernameIncorrectFormat());
-        } else {
-          getAndSendUsername();
-        }
-      } else if (!incorrectFormatErroring) {
-        let text = messageElement.innerText;
-        sendMessage(new Message(username, text));
-        messageElement.innerText = "";
-      }
+      
+      let text = messageElement.innerText;
+      sendMessage(new Message(username, text));
+      messageElement.innerText = "";
     }
-
+    
     if (getSelectionStart() != messageElement) {
       sendCaretToEndOfMessageElement();
     }
 
     // document.getElementById("debug-mobile").innerText = escapeHtml(messageElement.innerHTML);
-
-    console.log(messageElement.innerHTML)
 
   });
 });
@@ -297,7 +264,7 @@ for (let element of document.getElementsByClassName("navbar-navigation")) {
     }
 
     if (element.id == "account-button") {
-      toggleSettings();
+      openSettings();
     }
   });
 }
@@ -310,25 +277,16 @@ window.addEventListener("resize", () => {
   scrollToBottomOfMessages();
 });
 
-function toggleSettings() {
-  console.log(settingsOpen);
-  if (!settingsOpen) {
-    document.getElementById("account").classList.remove("hidden");
-    document.getElementById("messages").classList.add("hidden");
-  } else {
-    document.getElementById("account").classList.add("hidden");
-    document.getElementById("messages").classList.remove("hidden");
-  }
-
-  settingsOpen = !settingsOpen;
+function openSettings() {
+  document.getElementById("account").classList.remove("hidden");
+  document.getElementById("messages").classList.add("hidden");
+  settingsOpen = true;
  }
 
 function openMessages() {
-  if (settingsOpen) {
-    document.getElementById("account").classList.add("hidden");
-    document.getElementById("messages").classList.remove("hidden");
-    settingsOpen = false;
-  }
+  document.getElementById("account").classList.add("hidden");
+  document.getElementById("messages").classList.remove("hidden");
+  settingsOpen = false;
 }
 
 //Settings
@@ -336,17 +294,35 @@ function openMessages() {
 let signedIn = false;
 let signingInOrUp = "sign in";
 
-
-function signInOrUp() {
-  if (signingInOrUp == "sign in") {
-    socket.emit("sign in", getUserInfo());
-  } else {
-    socket.emit("sign up", getUserInfo());
+function getUserInfo() {
+  // exampleUser = {
+  // "username": "John Doe",
+  // "email": "john.doe@example.com",
+  // "password": "p4ssw0rd"
+  // }
+  return {
+    "username": document.getElementById("username").value, 
+    "password": document.getElementById("password").value,
+    "email": document.getElementById("email").value
   }
 }
 
-socket.on("sign in result", function() {
-  
+async function signInOrUp() {
+  if (signingInOrUp == "sign in") {
+    await socket.emit("sign in", getUserInfo());
+  } else {
+    await socket.emit("sign up", getUserInfo());
+  }
+}
+
+socket.on("sign in result", function(result) {
+  if (result.success) {
+    username = result.triedData.username;
+    console.log(result);
+  } else {
+    document.getElementById("validator").classList.remove("hidden");
+    document.getElementById("validator").innerText = result.result;
+  }
 });
 
 document.getElementById("element-selector").addEventListener("change", function() {
@@ -360,10 +336,10 @@ document.getElementById("element-selector").addEventListener("change", function(
 });
 
 document.getElementById("settings-confirm").addEventListener("click", function() {
-  // if (signedIn) {
-    // signOut();
-    // return;
-  // }
+  if (signedIn) {
+    signOut();
+    return;
+  }
   
   signInOrUp();
   

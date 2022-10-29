@@ -89,25 +89,29 @@ async function signIn(user) {
   });
 
   var userExists = await User.exists({
-    username: user.username, 
-    email: user.email
+    username: user.username //, 
+    // email: user.email
   });
   
   if (userExists != null) {
     
-    oldUser = await getUserFromUsername(user.username);
+    let savedUser = await getUserFromUsername(user.username);
 
-    var correctPassword = await validateSaltAndHash(user.password, oldUser.password);
+    let correctPassword = await validateSaltAndHash(user.password, savedUser.password);
 
+    console.log(oldUser.password);
+
+    console.log(user.password);
+    
     if (correctPassword) {
-      return "Correct password";
+      return {"result": "Correct password.", "triedData": user, "success": true};
     } else {
-      return "Incorrect password";
+      return {"result": "Incorrect password.", "triedData": user, "success": false};
     }
     
   }
 
-  return "No user found";
+  return {"result": "No user with that username found.", "triedData": user, "success": false};
 }
 
 async function signUp(user) {
@@ -117,32 +121,38 @@ async function signUp(user) {
     "email": user.email
   });
 
-  var userExists = await User.exists({
+  let userExists = await User.exists({
     username: user.username, 
     email: user.email
   });
 
   console.log(userExists);
+
+  let result;
   
   if (userExists != null) {
-    return "User already exists";
+    return {"result": "User with that username and email already exists.", "triedData": user, "success": false};
   }
   
   userModel.save(function(err) {
     if (err) {
       console.log("Error saving user: " + err);
-      return "Failed";
+      result = {"result": "Failed", "triedData": user, "success": false};
+      return;
     }
 
-    console.log(`Saved user sucsessfully.
+    console.log(`Saved user successfully.
       Username: ${user.username}
       Email: ${user.email}`);
-    return "Saved";
+    result = {"result": "Saved", "triedData": user, "success": true};
+    return;
   });
+  
+  return result;
 }
 
 async function getUserFromUsername(username) {
-  var user = await User.findOne({name: new RegExp(`^${RegExp.escape(username)}$`)});
+  let user = await User.findOne({name: new RegExp(`^${RegExp.escape(username)}$`)});
   
   if (user == null) {
     return "No user found";
@@ -168,7 +178,7 @@ async function createRoom(room) {
 async function newMessage(message, room) {
   const messageModel = new Message(message);
 
-  var roomExists = await Room.exists({
+  let roomExists = await Room.exists({
     "name": room
   });
 

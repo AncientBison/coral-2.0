@@ -71,10 +71,6 @@ io.on("connection", (socket) => {
 
   socket.data.username = "";
 
-  socket.once("setUsername", (username) => {
-    socket.data.username = username;
-  });
-
   socket.on("message", (username, text) => {
     console.log(`New message received:
               username: ${username}
@@ -120,12 +116,21 @@ io.on("connection", (socket) => {
     populateRoomMessagesToUser(socket, "Room " + roomNumber);
   });
 
-  socket.on("sign in", (userInfo) => {
-    socket.emit("sign in result", database.signIn(userInfo));
+  socket.on("sign in", async (userInfo) => {
+    let result = await database.signIn(userInfo);
+    socket.emit("sign in result", result);
+    
+    if (result.success) {
+      socket.data.username = userInfo.username;
+    }
   });
 
-  socket.on("sign up", (userInfo) => {
-    socket.emit("sign up result", database.signUp(userInfo));
+  socket.on("sign up", async (userInfo) => {
+    let result = await database.signIn(userInfo);
+    socket.emit("sign in result", result);
+    if (result.success) {
+      socket.data.username = userInfo.username;
+    }
   });
 
 });
