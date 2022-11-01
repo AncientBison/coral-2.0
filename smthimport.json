@@ -1,0 +1,28 @@
+POST /token HTTP/1.1
+Host: oauth2.googleapis.com
+Content-length: 316
+content-type: application/x-www-form-urlencoded
+user-agent: google-oauth-playground
+code=4%2F0ARtbsJrX_I9XxQecDl0HrGs9h11vB-WclhUvDTiOKF95n89T1fCNQ_HzkPl2W_2O0QZrnA&redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&client_id=16350323880-5uor5ls02sfr0riitce802ncf1foiirj.apps.googleusercontent.com&client_secret=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&scope=&grant_type=authorization_code
+HTTP/1.1 200 OK
+Content-length: 447
+X-xss-protection: 0
+X-content-type-options: nosniff
+Transfer-encoding: chunked
+Expires: Mon, 01 Jan 1990 00:00:00 GMT
+Vary: Origin, X-Origin, Referer
+Server: scaffolding on HTTPServer2
+-content-encoding: gzip
+Pragma: no-cache
+Cache-control: no-cache, no-store, max-age=0, must-revalidate
+Date: Sat, 29 Oct 2022 22:18:10 GMT
+X-frame-options: SAMEORIGIN
+Alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000,h3-Q050=":443"; ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443"; ma=2592000,quic=":443"; ma=2592000; v="46,43"
+Content-type: application/json; charset=utf-8
+{
+  "access_token": "ya29.a0Aa4xrXP-Jo_vuiOdRHMCb73gaWrpLUofRBWnVMzmJlt9P2Wp7TJJ6lxuBDd2LjA0vjqHmtEVIszKdFwa5wEPAGbg4klmvaRCWd0bqyvpiTR52bJZ7ErKrGgfntibIL0OZCj9W2ZGyjaahUSVmGvk64sstHv8aCgYKATASARESFQEjDvL9564eG0SoIemoMBenPbzx9Q0163", 
+  "scope": "https://mail.google.com/", 
+  "token_type": "Bearer", 
+  "expires_in": 3599, 
+  "refresh_token": "1//043DmflTe4CDvCgYIARAAGAQSNwF-L9IrPMCsb_g3O96DxcxGod7-k-DUqb3r6ydEGDfLEFlP_fD4TVhZUdQYLqt-hgMB87JwsFs"
+}

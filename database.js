@@ -6,7 +6,7 @@ RegExp.escape = function(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
-const saltRounds = 10;
+const SALT_ROUNDS = 10;
 
 var maxMessageLogMemory = 10;
 
@@ -18,7 +18,7 @@ const User = mongoose.model("User", {
   username: String, 
   password: String, 
   email: String, 
-  salt: String
+  notifications: String
 });
 
 const MessageSchema = new mongoose.Schema({
@@ -92,7 +92,7 @@ function isValidEmail(email) {
 }
 
 async function saltAndHash(password) {
-  const salt = bcrypt.genSaltSync(saltRounds);
+  const salt = bcrypt.genSaltSync(SALT_ROUNDS);
   const hash = bcrypt.hashSync(password, salt);
   return hash;
 }
@@ -103,39 +103,36 @@ async function validateSaltAndHash(password, savedPassword) {
 }   
 
 async function signIn(user) {
-  var userExists = await User.exists({
+  let userExists = await User.exists({
     username: user.username
   });
   
-  if (userExists != null) {
-    
-    let savedUser = await getUserFromUsername(user.username);
-
-    let correctPassword = await validateSaltAndHash(user.password, savedUser.password);
-    
-    if (correctPassword) {
-      return {"result": "Correct password.", "triedData": user.username, "success": true};
-    } else {
-      return {"result": "Incorrect password.", "triedData": user.username, "success": false};
-    }
-    
+  if (userExists == null) {
+    return {"result": "No user with that username found.", "triedData": user.username, "success": false};
   }
 
-  return {"result": "No user with that username found.", "triedData": user.username, "success": false};
+  let savedUser = await getUserFromUsername(user.username);
+
+  let isCorrectPassword = await validateSaltAndHash(user.password, savedUser.password);
+  
+  if (isCorrectPassword) {
+    return {"result": "Correct password.", "triedData": user.username, "success": true};
+  } else {
+    return {"result": "Incorrect password.", "triedData": user.username, "success": false};
+  }
 }
 
 async function signUp(user) {
   const userModel = new User({
     "username": user.username, 
     "password": await saltAndHash(user.password), 
-    "email": user.email
+    "email": user.email, 
+    "notifications": "email"
   });
 
   let userExists = await User.exists({
     username: user.username
   });
-
-  console.log(userExists);
 
   let result;
   
@@ -166,13 +163,19 @@ async function signUp(user) {
 }
 
 async function getUserFromUsername(username) {
-  let user = await User.findOne({name: new RegExp(`^${RegExp.escape(username)}$`)});
+  let user = await User.findOne({"username": new RegExp(`^${RegExp.escape(username)}$`)});
   
   if (user == null) {
     return "No user found";
   }
   
   return user;
+}
+
+async function getEmailFromUsername(username) {
+  let user = await getUserFromUsername(username);
+
+  return user.email;
 }
 
 async function createRoom(room) {
@@ -241,6 +244,17 @@ async function newMessage(message, room) {
   // });
 }
 
+async function changeNotificationForUser(username, newNotificationMode) {
+  let result;
+
+  await User.updateOne({"username": username}, {"notifications": newNotificationMode}).then(result => {
+    result = "Saved";
+  }).catch(err => {
+    console.log(err);
+    result = "Failed";
+  });
+}
+
 async function getMessages(room) {
   let roomDocument = await Room.findOne({"name": room}).exec();
   
@@ -253,11 +267,19 @@ async function getMessages(room) {
   return roomDocument.messages;
 }
 
+async function getUsersWithEmailNotificationEmails() {
+  let usersMatched = await User.find({"notifications": "email"}).exec();
+  let emails = usersMatched.map(_ => _.email);
+  return emails;
+}
+
 module.exports = {
   signUp: signUp,
   signIn: signIn,
   getUser: getUserFromUsername,
   newMessage: newMessage, 
   getMessages: getMessages, 
-  setMaxMessageLogMemory: setMaxMessageLogMemory
+  setMaxMessageLogMemory: setMaxMessageLogMemory, 
+  changeNotificationForUser: changeNotificationForUser, 
+  getUsersWithEmailNotificationEmails, getUsersWithEmailNotificationEmails
 };

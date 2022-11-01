@@ -5,11 +5,24 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const fs = require('fs');
-// const email = require("./email")
+const email = require("./email")
 const database = require("./database.js")
 require('dotenv').config()
 
-// email.sendEmail("isb271@students.needham.k12.ma.us", "I like pie!");
+console.clear();
+
+// email.setEmailAccount(process.env['emailAccount']);
+// email.setEmailPassword(process.env['emailPassword'])
+// email.sendEmail("ilansbernstein@gmail.com", "I like pie!");
+
+function sendNewMessageEmail(username, text, sendTo) {
+  email.sendEmail({
+    subject: `New Message from ${username}`,
+    text: text,
+    to: sendTo,
+    from: process.env.EMAIL
+  });
+}
 
 // exampleUser = {
 // "username": "John Doe",
@@ -72,14 +85,18 @@ io.on("connection", (socket) => {
 
   socket.data.username = "";
 
-  socket.on("message", (username, text) => {
+  socket.on("message", async (username, text) => {
     console.log(`New message received:
               username: ${username}
               text: ${text}`);
 
     if (username == socket.data.username) {
       io.in(getRoomsForSocket(socket)).emit("message", username, text);
-      for (room of getRoomsForSocket(socket)) {
+
+      for (let email of [...new Set(await database.getUsersWithEmailNotificationEmails())]) {
+        sendNewMessageEmail(username, text, email);
+      }
+      for (let room of getRoomsForSocket(socket)) {
         database.newMessage({ "username": username, "text": text }, room);
       }
     }
@@ -134,6 +151,11 @@ io.on("connection", (socket) => {
     if (result.success) {
       socket.data.username = userInfo.username;
     }
+  });
+
+  socket.on("notification mode change", (newMode) => {
+    database.changeNotificationForUser(socket.data.username, newMode);
+    socket.data.notifications = newMode;
   });
 
 });

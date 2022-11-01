@@ -297,7 +297,7 @@ function signOut() {
   document.getElementById("settings-confirm").innerText = "Comfirm";
   document.getElementById("main-account-settings").classList.remove("hidden");
   document.getElementById("settings-confirm").classList.remove("button-3-red");
-  
+  document.getElementById("secondary-account-settings").classList.add("hidden");  
 }
 
 async function signInOrUp() {
@@ -316,6 +316,7 @@ socket.on("sign in result", function(result) {
     document.getElementById("main-account-settings").classList.add("hidden");
     document.getElementById("settings-confirm").classList.add("button-3-red");
     document.getElementById("validator").classList.add("hidden");
+    document.getElementById("secondary-account-settings").classList.remove("hidden");
   } else {
     document.getElementById("validator").classList.remove("hidden");
     document.getElementById("validator").innerText = result.result;
@@ -339,5 +340,12 @@ document.getElementById("settings-confirm").addEventListener("click", function()
   }
   
   signInOrUp();
-  
+});
+
+//Notifications
+let notificationMode = "normal";
+
+document.getElementById("notification-mode-selector").addEventListener("change", function() {
+  socket.emit("notification mode change", document.getElementById("notification-mode-selector").value);
+  notificationMode = document.getElementById("notification-mode-selector").value;
 });

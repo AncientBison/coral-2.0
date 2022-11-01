@@ -4,14 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "clean": "cleanDB.sh"
+    "dev": "dev.bat"
   },
   "author": "o",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
     "bcrypt": "^5.1.0",
     "dotenv": "^16.0.3",
     "express": "^4.17.3",
+    "googleapis": "^105.0.0",
     "jquery": "^3.6.0",
     "mongoose": "^6.6.5",
     "nodemailer": "^6.7.5",

@@ -46,6 +46,13 @@
         <p class="settings-label settings-validator hidden" id="validator"></p>
       </div>
     </span>
+    <span id="secondary-account-settings" class="hidden">
+      <label for="notification-modes" class="settings-label">Notifications:</label><select name="notification-modes" id="notification-mode-selector">
+        <option value="email" selected>Email (iOS)</option> <!-- Change whats automatically selected based on the db-->
+        <option value="disabled">Disabled</option>
+        <!-- <option value="normal" selected>Normal (doesn't work on iOS)</option> -->
+      </select>
+    </span>
     <button class="button-3" role="button" id="settings-confirm">Submit</button>
 <!--     <div id="signUp"> -->
 <!--        -->
