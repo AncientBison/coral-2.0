@@ -18,8 +18,6 @@ let connected = false;
 
 let messagesShown = 0;
 
-let username = "";
-
 let messageElement;
 
 const DEBUG = true;
@@ -69,7 +67,7 @@ function isDeviceiOS() {
 }
 
 socket.on("session result", (result) => {
-  if (result.sucsess) {
+  if (result.succes) {
     username = result.username;
   }
 });
@@ -96,13 +94,10 @@ socket.on("message", (messageRecived) => {
 });
 
 async function sendMessage(message) {
-  if (username == "") {
-    return "No username";
-  } else if (message.to == "" && message.direct) {
+  if (message.to == "" && message.direct) {
     return "No reciver";
   } else {
     debug(`New message sent:
-            username: ${username}
             text: ${message.text}`);
     socket.emit("message", message);
   }
@@ -217,7 +212,7 @@ addEventListener("load", () => {
       event.preventDefault();
       
       let text = messageElement.innerText;
-      sendMessage(new Message(username, text));
+      sendMessage({"text": text});
       messageElement.innerText = "";
     }
     
@@ -321,7 +316,6 @@ function getUserInfo() {
 
 function signOut() {
   signedIn = false;
-  username = "";
   document.getElementById("settings-confirm").innerText = "Comfirm";
   document.getElementById("main-account-settings").classList.remove("hidden");
   document.getElementById("settings-confirm").classList.remove("button-3-red");
@@ -338,7 +332,6 @@ async function signInOrUp() {
 
 socket.on("sign in result", function(result) {
   if (result.success) {
-    username = result.triedData;
     signedIn = true;
     document.getElementById("settings-confirm").innerText = "Sign Out";
     document.getElementById("main-account-settings").classList.add("hidden");

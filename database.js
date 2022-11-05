@@ -191,6 +191,16 @@ async function createNewSessionIdForUser(username) {
   });
 }
 
+async function getUserFromSessionId(sessionId) {
+  let userWithId = await User.findOne({"session": sessionId}).exec();
+  
+  if (!userWithId) {
+    return {"result": "No user with that sessionId found.", "session": sessionId, "success": false};
+  }
+
+  return {"result": userWithId, "session": sessionId, "success": false};
+}
+
 async function createRoom(room) {
   // return await Room.create({"name": room, "messages": []}).then(result => {
   //   return result;

@@ -116,13 +116,11 @@ io.on("connection", (socket) => {
   socket.data.username = "";
 
   socket.on("message", async (message) => {
+    message.username = socket.data.username;
+    
     console.log(`New message received:
-              username: ${username}
-              text: ${text}`);
-
-    if (message.username != socket.data.username) {
-      return;
-    }
+              username: ${message.username}
+              text: ${message.text}`);
     
     io.in(getRoomsForSocket(socket)).emit("message", message);
 
@@ -135,9 +133,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("old session", (sessionID) => {
-    if (database.sessionStore.sessionExists(sessionID)) {
-      socket.emit("session", );
+  socket.on("old session", async (sessionID) => {
+    let oldSessionResult = await database.sessionStore.getUserFromSession(sessionID);
+    if (oldSessionResult.succes) {
+      socket.emit("session", {"username": oldSessionResult.username, "succes": oldSessionResult.succes});
+      socket.data.username = oldSessionResult.username;
+      socket.data.signedIn = true;
     }
   });
   
