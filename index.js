@@ -8,8 +8,9 @@ const fs = require('fs');
 const email = require("./email")
 const database = require("./database.js")
 require('dotenv').config()
+const uuid = require("uuid");
 
-console.clear();
+// console.clear();
 
 // email.setEmailAccount(process.env['emailAccount']);
 // email.setEmailPassword(process.env['emailPassword'])
@@ -22,6 +23,7 @@ function sendNewMessageEmail(username, text, sendTo) {
     to: sendTo,
     from: process.env.EMAIL
   });
+  console.log(sendTo);
 }
 
 // exampleUser = {
@@ -61,7 +63,7 @@ async function populateRoomMessagesToUser(socket, room) {
   try {
     let messages = await database.getMessages(room);
     for (let message of messages) {
-      socket.emit("message", message.username, message.text);
+      socket.emit("message", message);
     }
   } catch (error) {
     return;
@@ -72,7 +74,33 @@ function getRoomsForSocket(socket) {
   return Array.from(socket.rooms.values());
 }
 
+// io.use((socket, next) => {
+//   try {
+//     const sessionID = socket.handshake.auth.sessionID;
+//     if (sessionID) {
+//       // find existing session
+//       const session = sessionStore.findSession(sessionID);
+//       if (session) {
+//         socket.sessionID = sessionID;
+//         socket.userID = session.userID;
+//         return next();
+//       }
+//     }
+//     // create new session
+//     socket.sessionID = uuid.v4();
+//     socket.userID = uuid.v4();
+//     next();
+//   } catch (error) {
+//     console.error(error);
+//   }
+// });
+
 io.on("connection", (socket) => {
+  socket.emit("session", {
+    sessionID: socket.sessionID,
+    userID: socket.userID,
+  });
+  
   let user = new User(socket);
   let id = socket.id;
   users.push({
@@ -80,45 +108,42 @@ io.on("connection", (socket) => {
   });
 
   socket.join(DEFAULT_ROOM);
+  socket.data.id = uuid.v4();
+  socket.join(socket.data.id);
 
   populateRoomMessagesToUser(socket, DEFAULT_ROOM);
 
   socket.data.username = "";
 
-  socket.on("message", async (username, text) => {
+  socket.on("message", async (message) => {
     console.log(`New message received:
               username: ${username}
               text: ${text}`);
 
-    if (username == socket.data.username) {
-      io.in(getRoomsForSocket(socket)).emit("message", username, text);
+    if (message.username != socket.data.username) {
+      return;
+    }
+    
+    io.in(getRoomsForSocket(socket)).emit("message", message);
 
-      for (let email of [...new Set(await database.getUsersWithEmailNotificationEmails())]) {
-        sendNewMessageEmail(username, text, email);
-      }
-      for (let room of getRoomsForSocket(socket)) {
-        database.newMessage({ "username": username, "text": text }, room);
-      }
+    for (let email of (await database.getUsersWithEmailNotificationEmails()).filter()) {
+      sendNewMessageEmail(message.username, message.text, email);
+    }
+    
+    for (let room of getRoomsForSocket(socket)) {
+      database.newMessage(message, room);
     }
   });
 
+  socket.on("old session", (sessionID) => {
+    if (database.sessionStore.sessionExists(sessionID)) {
+      socket.emit("session", );
+    }
+  });
+  
   socket.once("disconnect", () => {
     user = users.find(o => o.id === id);
     delete user;
-  });
-
-  socket.on("change room", (roomNumber) => {
-    socket.leave("Room 1");
-    socket.leave("Room 2");
-    socket.leave("Room 3");
-    socket.leave("Room 4");
-    socket.leave("Room 5");
-    // Make dynamic.
-    socket.join("Room " + roomNumber);
-
-    console.log(`User: ${socket.data.username} is now in rooms ${getRoomsForSocket(socket)}`);
-
-    populateRoomMessagesToUser(socket, "Room " + roomNumber);
   });
 
   socket.on("change room", (roomNumber) => {
@@ -141,6 +166,7 @@ io.on("connection", (socket) => {
     
     if (result.success) {
       socket.data.username = userInfo.username;
+      socket.data.signedIn = true;
     }
   });
 
@@ -150,6 +176,7 @@ io.on("connection", (socket) => {
     socket.emit("sign in result", result);
     if (result.success) {
       socket.data.username = userInfo.username;
+      socket.data.signedIn = true;
     }
   });
 

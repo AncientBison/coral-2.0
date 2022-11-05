@@ -38,16 +38,24 @@ function debug(text) {
   }
 }
 
-class Message {
-  constructor(username, text) {
-    this.username = username;
-    this.text = text;
-  }
-
-  toString() {
-    return `{${this.username}}: ${this.text}`;
+function stringifyMessage(message) {
+  if (message.direct) {
+    return `${message.username} -> ${message.to}: ${message.text}`;
+  } else {
+    return `{${message.username}}: ${message.text}`;
   }
 }
+
+// class Message {
+//   constructor(username, text) {
+//     this.username = username;
+//     this.text = text;
+//   }
+
+//   toString() {
+//     return `{${this.username}}: ${this.text}`;
+//   }
+// }
 
 function isDeviceiOS() {
   return [
@@ -60,10 +68,19 @@ function isDeviceiOS() {
   ].includes(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
 }
 
+socket.on("session result", (result) => {
+  if (result.sucsess) {
+    username = result.username;
+  }
+});
 
 socket.on("connect", () => {
   connected = true;
   debug("Sucsessfully Connected to the Socket.");
+  if (localStorage.getItem("sessionId")) {
+    socket.emit("old session", localStorage.getItem("sessionId"));
+    signedIn = true;
+  }
 });
 
 socket.on("disconnect", () => {
@@ -71,26 +88,27 @@ socket.on("disconnect", () => {
   debug("Disconnected from the Socket.");
 });
 
-socket.on("message", (username, text) => {
+socket.on("message", (messageRecived) => {
   debug(`New message received:
-              username: ${username}
-              text: ${text}`);
-  let message = new Message(username, text);
-  addMessage(message);
+              username: ${messageRecived.username}
+              text: ${messageRecived.text}`);``
+  addMessage(messageRecived);
 });
 
 async function sendMessage(message) {
   if (username == "") {
     return "No username";
+  } else if (message.to == "" && message.direct) {
+    return "No reciver";
   } else {
     debug(`New message sent:
             username: ${username}
             text: ${message.text}`);
-    socket.emit("message", message.username, message.text);
+    socket.emit("message", message);
   }
 }
 
-const MESSAGE_OVERFLOW_STYLE = "scroll" //"remove"
+const MESSAGE_OVERFLOW_STYLE = "scroll"; //"remove"
 
 function scrollToBottomOfMessages() {
   document.getElementById("messages").scrollTo(0, document.getElementById("messages").scrollHeight);
@@ -115,18 +133,27 @@ function clearMessageLog() {
   messagesShown = 0;
 }
 
-function addMessage(message) {
+function createMessageElement(message) {
+  let paragraph = document.createElement("p");
+  let text = document.createTextNode(stringifyMessage(message));
+  paragraph.appendChild(text);
+  paragraph.classList.add("message");
+
+  return paragraph;
+}
+
+function appendMessage(message) {
   if (MESSAGE_OVERFLOW_STYLE == "remove") {
     messagesShown += 1;
   }
-
-  let paragraph = document.createElement("p");
-  let text = document.createTextNode(message.toString());
-  paragraph.appendChild(text);
-  paragraph.classList.add("message");
+  
   let messages = document.getElementById("messages");
-  messages.insertBefore(paragraph, document.getElementById("message-start"));
+  messages.insertBefore(createMessageElement(message), document.getElementById("message-start"));
   cleanMessageLog();
+}
+
+function addMessage(message) {
+  appendMessage(message);
 }
 
 window.onload = function () {
@@ -135,6 +162,7 @@ window.onload = function () {
   }
   messageElement = document.getElementById("message");
   messageElement.focus();
+  resizeMessages();
 }
 
 function getSelectionStart() {
@@ -234,13 +262,13 @@ function joinRoom(roomLocation) {
   }
 }
 
-let oldRoomElementID = "room" + room;
+let oldRoomElementId = "room" + room;
 
 for (let element of document.getElementsByClassName("navbar-navigation")) {
   element.addEventListener("click", () => {
-    document.getElementById(oldRoomElementID).classList.remove("active");
+    document.getElementById(oldRoomElementId).classList.remove("active");
     element.classList.add("active");
-    oldRoomElementID = element.id;
+    oldRoomElementId = element.id;
     
     if (element.classList.contains("room-element")) {
       joinRoom(element.dataset.to);
@@ -253,13 +281,12 @@ for (let element of document.getElementsByClassName("navbar-navigation")) {
   });
 }
 
-window.addEventListener("resize", () => {
-  // console.log(window.innerHeight - document.getElementById("navbar").offsetHeight - document.getElementById("messages").outerHeight);
-  // console.log(document.getElementById("navbar").offsetHeight);
-  // console.log(document.getElementById("messages").outerHeight);
+window.addEventListener("resize", resizeMessages);
+
+function resizeMessages() {
   document.getElementById("messages").style.maxHeight = window.innerHeight - document.getElementById("navbar").offsetHeight - (document.getElementById("messages").outerHeight - document.getElementById("messages").offsetHeight) + "px";
   scrollToBottomOfMessages();
-});
+}
 
 function openSettings() {
   document.getElementById("account").classList.remove("hidden");
@@ -271,6 +298,7 @@ function openMessages() {
   document.getElementById("account").classList.add("hidden");
   document.getElementById("messages").classList.remove("hidden");
   settingsOpen = false;
+  resizeMessages();
 }
 
 //Settings

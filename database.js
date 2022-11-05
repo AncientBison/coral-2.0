@@ -18,7 +18,8 @@ const User = mongoose.model("User", {
   username: String, 
   password: String, 
   email: String, 
-  notifications: String
+  notifications: String, 
+  session: String
 });
 
 const MessageSchema = new mongoose.Schema({
@@ -127,7 +128,8 @@ async function signUp(user) {
     "username": user.username, 
     "password": await saltAndHash(user.password), 
     "email": user.email, 
-    "notifications": "email"
+    "notifications": "email", 
+    "session": createNewSessionKey()
   });
 
   let userExists = await User.exists({
@@ -176,6 +178,17 @@ async function getEmailFromUsername(username) {
   let user = await getUserFromUsername(username);
 
   return user.email;
+}
+
+async function createNewSessionIdForUser(username) {
+  let sessionId = createNewSessionId();
+
+  await User.updateOne({"username": username}, {"session": sessionId}).then(result => {
+    result = {"result": "Saved", "session": sessionId, "success": true};
+  }).catch(err => {
+    console.log(err);
+    result = {"result": "Failed", "session": sessionId, "success": false};
+  });
 }
 
 async function createRoom(room) {
@@ -253,6 +266,8 @@ async function changeNotificationForUser(username, newNotificationMode) {
     console.log(err);
     result = "Failed";
   });
+
+  return result;
 }
 
 async function getMessages(room) {
